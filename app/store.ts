@@ -17,14 +17,14 @@ class Storage {
         return this.storage.get(key);
     }
 
-    rpush(listKey: string, value: string): number {
+    rpush(listKey: string, ...value: string[]): number {
         const list = this.listStorage.get(listKey);
         if (!list) {
-            this.listStorage.set(listKey, [value]);
-            return 1;
+            this.listStorage.set(listKey, [...value]);
+            return value.length;
         }
 
-        const newLength = list.push(value);
+        const newLength = list.push(...value);
 
         return newLength;
     }

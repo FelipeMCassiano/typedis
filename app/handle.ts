@@ -60,7 +60,7 @@ const handlers: HandlerMap = {
     },
     ping: (args: PingArgs) => simpleString(args.pong),
     rpush: (args: RPushArgs) => {
-        const newLength = storage.rpush(args.listKey, args.value);
+        const newLength = storage.rpush(args.listKey, ...args.value);
         return respInt(newLength);
     },
 };

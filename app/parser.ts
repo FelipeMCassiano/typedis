@@ -21,7 +21,7 @@ export type EchoArgs = {
 };
 export type RPushArgs = {
     listKey: string;
-    value: string;
+    value: string[];
 };
 
 type CommandParser = (command: string[]) => ParserResult;
@@ -102,7 +102,7 @@ const commandsParserMap: Map<CommandType, CommandParser> = new Map([
         (command: string[]) => {
             return {
                 type: "rpush",
-                args: { listKey: command[0], value: command[1] },
+                args: { listKey: command[0], value: command.slice(1) },
             };
         },
     ],
