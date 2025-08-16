@@ -28,6 +28,12 @@ class Storage {
 
         return newLength;
     }
+    lrange(listKey: string, start: number, stop: number): string[] {
+        const list = this.listStorage.get(listKey);
+        if (!list) return [];
+
+        return list.slice(start, stop + 1);
+    }
 }
 
 const storage = new Storage();

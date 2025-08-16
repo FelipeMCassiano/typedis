@@ -1,6 +1,7 @@
 import type {
     EchoArgs,
     GetArgs,
+    LRangeArgs,
     ParserResult,
     PingArgs,
     RPushArgs,
@@ -23,6 +24,8 @@ export function handleParserResult(parserResult?: ParserResult): string {
             return handlers.ping(parserResult.args);
         case "rpush":
             return handlers.rpush(parserResult.args);
+        case "lrange":
+            return handlers.lrange(parserResult.args);
         default:
             return nonRespBulk();
     }
@@ -34,6 +37,7 @@ type HandlerMap = {
     set: (args: SetArgs) => string;
     ping: (args: PingArgs) => string;
     rpush: (args: RPushArgs) => string;
+    lrange: (args: LRangeArgs) => string;
 };
 
 const handlers: HandlerMap = {
@@ -63,7 +67,22 @@ const handlers: HandlerMap = {
         const newLength = storage.rpush(args.listKey, ...args.value);
         return respInt(newLength);
     },
+    lrange: (args: LRangeArgs) => {
+        const start = parseInt(args.start);
+        const stop = parseInt(args.stop);
+
+        const values = storage.lrange(args.listKey, start, stop);
+        return respArray(...values);
+    },
 };
+
+function respArray(...values: string[]): string {
+    let resp = `*${values.length}\r\n`;
+    for (const val of values) {
+        resp += `$${val.length}\r\n${val}\r\n`;
+    }
+    return resp;
+}
 
 function simpleString(value: String = "OK"): string {
     return `+${value}\r\n`;
