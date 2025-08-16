@@ -6,10 +6,8 @@ console.log("Logs from your program will appear here!");
 
 const server: net.Server = net.createServer((connection: net.Socket) => {
     connection.on("data", (data) => {
-        const start = Date.now();
         const parsedData = parse(data.toString());
         const handledData = handleParserResult(parsedData);
-        console.log("parsed and handled within: ", start - Date.now());
 
         connection.write(handledData);
     });
