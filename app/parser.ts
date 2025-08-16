@@ -2,7 +2,8 @@ export type ParserResult =
     | { type: "echo"; args: EchoArgs }
     | { type: "get"; args: GetArgs }
     | { type: "set"; args: SetArgs }
-    | { type: "ping"; args: PingArgs };
+    | { type: "ping"; args: PingArgs }
+    | { type: "rpush"; args: RPushArgs };
 
 export type SetArgs = {
     key: string;
@@ -18,10 +19,14 @@ export type PingArgs = {
 export type EchoArgs = {
     arg: string;
 };
+export type RPushArgs = {
+    listKey: string;
+    value: string;
+};
 
 type CommandParser = (command: string[]) => ParserResult;
 
-export type CommandType = "echo" | "set" | "ping" | "get";
+export type CommandType = "echo" | "set" | "ping" | "get" | "rpush";
 
 export function parse(data: string): ParserResult | undefined {
     const parsedResp = parseResp(data);
@@ -92,8 +97,13 @@ const commandsParserMap: Map<CommandType, CommandParser> = new Map([
             return { type: "get", args: { key: key } };
         },
     ],
+    [
+        "rpush",
+        (command: string[]) => {
+            return {
+                type: "rpush",
+                args: { listKey: command[0], value: command[1] },
+            };
+        },
+    ],
 ]);
-
-function getString(command: string[]): string {
-    return command.shift()!;
-}

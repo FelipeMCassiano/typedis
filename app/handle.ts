@@ -3,6 +3,7 @@ import type {
     GetArgs,
     ParserResult,
     PingArgs,
+    RPushArgs,
     SetArgs,
 } from "./parser";
 import storage from "./store";
@@ -20,6 +21,8 @@ export function handleParserResult(parserResult?: ParserResult): string {
             return handlers.set(parserResult.args);
         case "ping":
             return handlers.ping(parserResult.args);
+        case "rpush":
+            return handlers.rpush(parserResult.args);
         default:
             return nonRespBulk();
     }
@@ -30,6 +33,7 @@ type HandlerMap = {
     get: (args: GetArgs) => string;
     set: (args: SetArgs) => string;
     ping: (args: PingArgs) => string;
+    rpush: (args: RPushArgs) => string;
 };
 
 const handlers: HandlerMap = {
@@ -46,18 +50,19 @@ const handlers: HandlerMap = {
     },
     set: (args: SetArgs) => {
         console.log(args);
-        const key = args.key;
-        const value = args.value;
         const exp = parseInt(args.exp) ?? 0;
         const now = new Date();
-        storage.set(key, {
-            value: value,
+        storage.set(args.key, {
+            value: args.value,
             exp: new Date(now.getTime() + exp),
         });
         return simpleString();
     },
-
     ping: (args: PingArgs) => simpleString(args.pong),
+    rpush: (args: RPushArgs) => {
+        const newLength = storage.rpush(args.listKey, args.value);
+        return respInt(newLength);
+    },
 };
 
 function simpleString(value: String = "OK"): string {
@@ -68,4 +73,7 @@ function respBulk(message: string): string {
 }
 function nonRespBulk(): string {
     return "$-1\r\n";
+}
+function respInt(value: number): string {
+    return `:${value}\r\n`;
 }
