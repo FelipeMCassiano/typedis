@@ -1,44 +1,76 @@
-type CommandResponseFunc = (command: string[]) => string;
-type CommandType = "echo" | "set" | "ping" | "get";
+export type ParserResult = {
+    type: CommandType;
+    args: string[];
+    raw?: string;
+};
 
-export function parse(data: string): string {
-    const command = data.toString().split("\n");
+type CommandParser = (command: string[]) => ParserResult;
 
-    removeNumberOfParamters(command);
+export type CommandType = "echo" | "set" | "ping" | "get";
 
-    removeBytes(command);
+export function parse(data: string): ParserResult | undefined {
+    const parsedResp = parseResp(data);
 
-    console.log(command);
+    const typeCommand = parsedResp[0].toLowerCase() as CommandType;
 
-    const typeCommand = command.shift()!.trim().toLowerCase() as CommandType;
+    const commandParser = commandsParserMap.get(typeCommand);
 
-    const responseFunc = commandsMap.get(typeCommand);
-
-    return responseFunc ? responseFunc(command) : "";
+    return commandParser ? commandParser(parsedResp.slice(1)) : undefined;
 }
 
-function removeNumberOfParamters(command: string[]) {
-    if (command[0].startsWith("*")) {
-        command.shift();
+function parseResp(data: string): string[] {
+    const splitedCommand = data.toString().split("\n");
+    const parsedCommand: string[] = [];
+    for (const command of splitedCommand) {
+        const normalized = command.slice(0, -1);
+        if (
+            normalized.startsWith("$") ||
+            normalized.startsWith("*") ||
+            normalized === ""
+        ) {
+            continue;
+        }
+        parsedCommand.push(normalized);
     }
-}
-function removeBytes(command: string[]) {
-    if (command[0].startsWith("$")) {
-        command.shift();
-    }
+
+    return parsedCommand;
 }
 
-const commandsMap: Map<CommandType, CommandResponseFunc> = new Map([
+const commandsParserMap: Map<CommandType, CommandParser> = new Map([
     [
         "echo",
-        (command: string[]) => {
-            removeBytes(command);
-            const message = command.shift()!.trim();
-
-            return `$${message.length}\r\n${message}\r\n`;
+        (command: string[]): ParserResult => {
+            return { type: "echo", args: [command[0]] };
         },
     ],
-    ["set", (command: string[]) => ""],
-    ["ping", (command: string[]) => "+PONG\r\n"],
-    ["get", (command: string[]) => ""],
+
+    [
+        "set",
+        (command: string[]): ParserResult => {
+            const key = getString(command);
+            const value = getString(command);
+
+            return { type: "set", args: [key, value] };
+        },
+    ],
+    [
+        "ping",
+        (command: string[]): ParserResult => {
+            return {
+                type: "ping",
+                args: ["PONG"],
+            };
+        },
+    ],
+    [
+        "get",
+        (command: string[]) => {
+            const key = getString(command);
+            return { type: "get", args: [key] };
+        },
+    ],
 ]);
+
+function getString(command: string[]): string {
+    return command.shift()!;
+}
