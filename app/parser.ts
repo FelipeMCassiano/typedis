@@ -1,7 +1,22 @@
-export type ParserResult = {
-    type: CommandType;
-    args: string[];
-    raw?: string;
+export type ParserResult =
+    | { type: "echo"; args: EchoArgs }
+    | { type: "get"; args: GetArgs }
+    | { type: "set"; args: SetArgs }
+    | { type: "ping"; args: PingArgs };
+
+export type SetArgs = {
+    key: string;
+    value: string;
+    exp: string;
+};
+export type GetArgs = {
+    key: string;
+};
+export type PingArgs = {
+    pong: "PONG";
+};
+export type EchoArgs = {
+    arg: string;
 };
 
 type CommandParser = (command: string[]) => ParserResult;
@@ -40,17 +55,25 @@ const commandsParserMap: Map<CommandType, CommandParser> = new Map([
     [
         "echo",
         (command: string[]): ParserResult => {
-            return { type: "echo", args: [command[0]] };
+            return { type: "echo", args: { arg: command[0] } };
         },
     ],
 
     [
         "set",
         (command: string[]): ParserResult => {
-            const key = getString(command);
-            const value = getString(command);
+            const args: string[] = [];
+            for (const arg of command) {
+                if (arg.toLowerCase() === "px") {
+                    continue;
+                }
+                args.push(arg);
+            }
 
-            return { type: "set", args: [key, value] };
+            return {
+                type: "set",
+                args: { key: args[0], value: args[1], exp: args[2] },
+            };
         },
     ],
     [
@@ -58,15 +81,15 @@ const commandsParserMap: Map<CommandType, CommandParser> = new Map([
         (command: string[]): ParserResult => {
             return {
                 type: "ping",
-                args: ["PONG"],
+                args: { pong: "PONG" },
             };
         },
     ],
     [
         "get",
         (command: string[]) => {
-            const key = getString(command);
-            return { type: "get", args: [key] };
+            const key = command[0];
+            return { type: "get", args: { key: key } };
         },
     ],
 ]);

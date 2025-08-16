@@ -1,41 +1,64 @@
-import type { CommandType, ParserResult } from "./parser";
+import type {
+    EchoArgs,
+    GetArgs,
+    ParserResult,
+    PingArgs,
+    SetArgs,
+} from "./parser";
 import storage from "./store";
 
 export function handleParserResult(parserResult?: ParserResult): string {
     if (!parserResult) {
         return nonRespBulk();
     }
-    const handler = handlers.get(parserResult.type);
-
-    return handler ? handler(parserResult.args) : nonRespBulk();
+    switch (parserResult.type) {
+        case "echo":
+            return handlers.echo(parserResult.args);
+        case "get":
+            return handlers.get(parserResult.args);
+        case "set":
+            return handlers.set(parserResult.args);
+        case "ping":
+            return handlers.ping(parserResult.args);
+        default:
+            return nonRespBulk();
+    }
 }
 
-const handlers: Map<CommandType, (args: string[]) => string> = new Map([
-    [
-        "echo",
-        (args: string[]) => {
-            return respBulk(args[0]);
-        },
-    ],
-    [
-        "get",
-        (args: string[]) => {
-            const value = storage.get(args[0]);
+type HandlerMap = {
+    echo: (args: EchoArgs) => string;
+    get: (args: GetArgs) => string;
+    set: (args: SetArgs) => string;
+    ping: (args: PingArgs) => string;
+};
 
-            return value ? respBulk(value) : nonRespBulk();
-        },
-    ],
-    [
-        "set",
-        (args: string[]) => {
-            const key = args[0];
-            const value = args[1];
-            storage.set(key, value);
-            return simpleString();
-        },
-    ],
-    ["ping", (args: string[]) => simpleString("PONG")],
-]);
+const handlers: HandlerMap = {
+    echo: (args) => respBulk(args.arg),
+    get: (args) => {
+        const data = storage.get(args.key);
+        const now = new Date();
+
+        if (!data || data.exp < now) {
+            return nonRespBulk();
+        }
+
+        return respBulk(data.value);
+    },
+    set: (args: SetArgs) => {
+        console.log(args);
+        const key = args.key;
+        const value = args.value;
+        const exp = parseInt(args.exp) ?? 0;
+        const now = new Date();
+        storage.set(key, {
+            value: value,
+            exp: new Date(now.getTime() + exp),
+        });
+        return simpleString();
+    },
+
+    ping: (args: PingArgs) => simpleString(args.pong),
+};
 
 function simpleString(value: String = "OK"): string {
     return `+${value}\r\n`;
