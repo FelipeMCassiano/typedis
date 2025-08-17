@@ -55,6 +55,7 @@ class Storage<T> {
             for (const val of value) {
                 newList.prepend(val);
             }
+
             this.listStorage.set(listKey, newList);
             return newList.length;
         }

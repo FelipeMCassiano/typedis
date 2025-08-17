@@ -131,6 +131,6 @@ export class LinkedList<T> {
             idx--;
         }
 
-        return values;
+        return values.reverse();
     }
 }
