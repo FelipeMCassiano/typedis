@@ -1,6 +1,6 @@
 type StorageValue = {
     value: string;
-    exp: Date;
+    exp: number;
 };
 
 class Storage {

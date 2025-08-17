@@ -20,9 +20,10 @@ const handlers: Handler = {
     echo: (args) => respBulk(args.arg),
     get: (args) => {
         const data = storage.get(args.key);
-        const now = new Date();
+        const now = Date.now();
 
-        if (!data || data.exp < now) {
+        if (!data || (data.exp > 0 && data.exp < now)) {
+            console.log(data);
             return nonRespBulk();
         }
 
@@ -30,10 +31,12 @@ const handlers: Handler = {
     },
     set: (args: SetArgs) => {
         const exp = parseInt(args.exp) || 0;
-        const now = new Date();
+        const now = Date.now();
+
+        console.log(exp, now);
         storage.set(args.key, {
             value: args.value,
-            exp: new Date(now.getTime() + exp),
+            exp: exp ? now + exp : exp,
         });
         return simpleString();
     },
