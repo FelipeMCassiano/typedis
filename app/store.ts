@@ -32,6 +32,11 @@ class Storage {
         const list = this.listStorage.get(listKey);
         if (!list) return [];
 
+        start = start < 0 ? Math.max(0, list.length + start) : start;
+        stop = stop < 0 ? Math.max(0, list.length + stop) : stop;
+
+        if (!(start < stop && start < list.length)) return [];
+
         return list.slice(start, stop + 1);
     }
 }

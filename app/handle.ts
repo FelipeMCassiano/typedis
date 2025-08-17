@@ -1,6 +1,4 @@
 import type {
-    EchoArgs,
-    GetArgs,
     LRangeArgs,
     ParserResult,
     PingArgs,
@@ -13,34 +11,12 @@ export function handleParserResult(parserResult?: ParserResult): string {
     if (!parserResult) {
         return nonRespBulk();
     }
-    switch (parserResult.type) {
-        case "echo":
-            return handlers.echo(parserResult.args);
-        case "get":
-            return handlers.get(parserResult.args);
-        case "set":
-            return handlers.set(parserResult.args);
-        case "ping":
-            return handlers.ping(parserResult.args);
-        case "rpush":
-            return handlers.rpush(parserResult.args);
-        case "lrange":
-            return handlers.lrange(parserResult.args);
-        default:
-            return nonRespBulk();
-    }
+    return handlers[parserResult.type](parserResult.args as never);
 }
-
-type HandlerMap = {
-    echo: (args: EchoArgs) => string;
-    get: (args: GetArgs) => string;
-    set: (args: SetArgs) => string;
-    ping: (args: PingArgs) => string;
-    rpush: (args: RPushArgs) => string;
-    lrange: (args: LRangeArgs) => string;
+type Handler<T extends ParserResult = ParserResult> = {
+    [K in T as K["type"]]: (args: K["args"]) => string;
 };
-
-const handlers: HandlerMap = {
+const handlers: Handler = {
     echo: (args) => respBulk(args.arg),
     get: (args) => {
         const data = storage.get(args.key);
@@ -53,8 +29,7 @@ const handlers: HandlerMap = {
         return respBulk(data.value);
     },
     set: (args: SetArgs) => {
-        console.log(args);
-        const exp = parseInt(args.exp) ?? 0;
+        const exp = parseInt(args.exp) || 0;
         const now = new Date();
         storage.set(args.key, {
             value: args.value,
@@ -63,16 +38,14 @@ const handlers: HandlerMap = {
         return simpleString();
     },
     ping: (args: PingArgs) => simpleString(args.pong),
-    rpush: (args: RPushArgs) => {
-        const newLength = storage.rpush(args.listKey, ...args.value);
-        return respInt(newLength);
-    },
+    rpush: (args: RPushArgs) =>
+        respInt(storage.rpush(args.listKey, ...args.value)),
+
     lrange: (args: LRangeArgs) => {
         const start = parseInt(args.start);
         const stop = parseInt(args.stop);
 
-        const values = storage.lrange(args.listKey, start, stop);
-        return respArray(...values);
+        return respArray(...storage.lrange(args.listKey, start, stop));
     },
 };
 
