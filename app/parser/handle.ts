@@ -43,6 +43,10 @@ const handlers: Handler = {
     },
     lpush: (args) => respInt(storage.lpush(args.listKey, ...args.value)),
     llen: (args) => respInt(storage.getlength(args.listKey)),
+    lpop: (args) => {
+        const result = storage.lpop(args.listKey);
+        return result ? respBulk(result) : nonRespBulk();
+    },
 };
 
 function respArray(...values: string[]): string {

@@ -70,6 +70,14 @@ class Storage<T> {
 
         return list.length;
     }
+    lpop(listKey: string): T | null {
+        const list = this.listStorage.get(listKey);
+        if (!list || list.length < 0) {
+            return null;
+        }
+
+        return list.deleteHead();
+    }
 }
 
 const storage = new Storage<string>();

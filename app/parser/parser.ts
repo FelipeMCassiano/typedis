@@ -110,4 +110,13 @@ const commandsParserMap: Map<CommandType, CommandParser> = new Map([
             };
         },
     ],
+    [
+        "lpop",
+        (command: string[]) => {
+            return {
+                type: "lpop",
+                args: { listKey: command[0] },
+            };
+        },
+    ],
 ]);
