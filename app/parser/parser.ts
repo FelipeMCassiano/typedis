@@ -1,39 +1,6 @@
-export type ParserResult =
-    | { type: "echo"; args: EchoArgs }
-    | { type: "get"; args: GetArgs }
-    | { type: "set"; args: SetArgs }
-    | { type: "ping"; args: PingArgs }
-    | { type: "rpush"; args: RPushArgs }
-    | { type: "lrange"; args: LRangeArgs };
-
-export type SetArgs = {
-    key: string;
-    value: string;
-    exp: string;
-};
-export type GetArgs = {
-    key: string;
-};
-export type PingArgs = {
-    pong: "PONG";
-};
-export type EchoArgs = {
-    arg: string;
-};
-export type RPushArgs = {
-    listKey: string;
-    value: string[];
-};
-export type LRangeArgs = {
-    listKey: string;
-    start: string;
-    stop: string;
-};
+import type { CommandType, ParserResult } from "./types";
 
 type CommandParser = (command: string[]) => ParserResult;
-
-export type CommandType = "echo" | "set" | "ping" | "get" | "rpush" | "lrange";
-
 export function parse(data: string): ParserResult | undefined {
     const parsedResp = parseResp(data);
 
@@ -122,6 +89,15 @@ const commandsParserMap: Map<CommandType, CommandParser> = new Map([
                     start: command[1],
                     stop: command[2],
                 },
+            };
+        },
+    ],
+    [
+        "lpush",
+        (command: string[]) => {
+            return {
+                type: "lpush",
+                args: { listKey: command[0], value: command.slice(1) },
             };
         },
     ],

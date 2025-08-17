@@ -1,11 +1,5 @@
-import type {
-    LRangeArgs,
-    ParserResult,
-    PingArgs,
-    RPushArgs,
-    SetArgs,
-} from "./parser";
-import storage from "./store";
+import storage from "../store/store";
+import type { ParserResult } from "./types";
 
 export function handleParserResult(parserResult?: ParserResult): string {
     if (!parserResult) {
@@ -23,41 +17,39 @@ const handlers: Handler = {
         const now = Date.now();
 
         if (!data || (data.exp > 0 && data.exp < now)) {
-            console.log(data);
             return nonRespBulk();
         }
 
         return respBulk(data.value);
     },
-    set: (args: SetArgs) => {
+    set: (args) => {
         const exp = parseInt(args.exp) || 0;
         const now = Date.now();
 
-        console.log(exp, now);
         storage.set(args.key, {
             value: args.value,
             exp: exp ? now + exp : exp,
         });
         return simpleString();
     },
-    ping: (args: PingArgs) => simpleString(args.pong),
-    rpush: (args: RPushArgs) =>
-        respInt(storage.rpush(args.listKey, ...args.value)),
+    ping: (args) => simpleString(args.pong),
+    rpush: (args) => respInt(storage.rpush(args.listKey, ...args.value)),
 
-    lrange: (args: LRangeArgs) => {
+    lrange: (args) => {
         const start = parseInt(args.start);
         const stop = parseInt(args.stop);
 
         return respArray(...storage.lrange(args.listKey, start, stop));
     },
+    lpush: (args) => respInt(storage.lpush(args.listKey, ...args.value)),
 };
 
 function respArray(...values: string[]): string {
-    let resp = `*${values.length}\r\n`;
+    const resp = [`*${values.length}\r\n`];
     for (const val of values) {
-        resp += `$${val.length}\r\n${val}\r\n`;
+        resp.push(`$${val.length}\r\n${val}\r\n`);
     }
-    return resp;
+    return resp.join("");
 }
 
 function simpleString(value: String = "OK"): string {

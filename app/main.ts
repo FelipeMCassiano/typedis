@@ -1,6 +1,6 @@
 import * as net from "net";
-import { handleParserResult } from "./handle";
-import { parse } from "./parser";
+import { handleParserResult } from "./parser/handle";
+import { parse } from "./parser/parser";
 
 console.log("Logs from your program will appear here!");
 
