@@ -6,7 +6,7 @@ export function parse(data: string): ParserResult | undefined {
 
     const typeCommand = parsedResp[0].toLowerCase() as CommandType;
 
-    const commandParser = commandsParserMap.get(typeCommand);
+    const commandParser = commandsParserMap[typeCommand];
 
     return commandParser ? commandParser(parsedResp.slice(1)) : undefined;
 }
@@ -28,95 +28,79 @@ function parseResp(data: string): string[] {
 
     return parsedCommand;
 }
+type CommandMap = {
+    [key in CommandType]: CommandParser;
+};
 
-const commandsParserMap: Map<CommandType, CommandParser> = new Map([
-    [
-        "echo",
-        (command: string[]): ParserResult => {
-            return { type: "echo", args: { arg: command[0] } };
-        },
-    ],
+const commandsParserMap: CommandMap = {
+    echo: (command: string[]): ParserResult => {
+        return { type: "echo", args: { arg: command[0] } };
+    },
 
-    [
-        "set",
-        (command: string[]): ParserResult => {
-            const args: string[] = [];
-            for (const arg of command) {
-                if (arg.toLowerCase() === "px") {
-                    continue;
-                }
-                args.push(arg);
+    set: (command: string[]): ParserResult => {
+        const args: string[] = [];
+        for (const arg of command) {
+            if (arg.toLowerCase() === "px") {
+                continue;
             }
+            args.push(arg);
+        }
 
-            return {
-                type: "set",
-                args: { key: args[0], value: args[1], exp: args[2] },
-            };
-        },
-    ],
-    [
-        "ping",
-        (command: string[]): ParserResult => {
-            return {
-                type: "ping",
-                args: { pong: "PONG" },
-            };
-        },
-    ],
-    [
-        "get",
-        (command: string[]) => {
-            const key = command[0];
-            return { type: "get", args: { key: key } };
-        },
-    ],
-    [
-        "rpush",
-        (command: string[]) => {
-            return {
-                type: "rpush",
-                args: { listKey: command[0], value: command.slice(1) },
-            };
-        },
-    ],
-    [
-        "lrange",
-        (command: string[]) => {
-            return {
-                type: "lrange",
-                args: {
-                    listKey: command[0],
-                    start: command[1],
-                    stop: command[2],
-                },
-            };
-        },
-    ],
-    [
-        "lpush",
-        (command: string[]) => {
-            return {
-                type: "lpush",
-                args: { listKey: command[0], value: command.slice(1) },
-            };
-        },
-    ],
-    [
-        "llen",
-        (command: string[]) => {
-            return {
-                type: "llen",
-                args: { listKey: command[0] },
-            };
-        },
-    ],
-    [
-        "lpop",
-        (command: string[]) => {
-            return {
-                type: "lpop",
-                args: { listKey: command[0] },
-            };
-        },
-    ],
-]);
+        return {
+            type: "set",
+            args: { key: args[0], value: args[1], exp: args[2] },
+        };
+    },
+
+    ping: (command: string[]): ParserResult => {
+        return {
+            type: "ping",
+            args: { pong: "PONG" },
+        };
+    },
+
+    get: (command: string[]) => {
+        const key = command[0];
+        return { type: "get", args: { key: key } };
+    },
+
+    rpush: (command: string[]) => {
+        return {
+            type: "rpush",
+            args: { listKey: command[0], value: command.slice(1) },
+        };
+    },
+    lrange: (command: string[]) => {
+        return {
+            type: "lrange",
+            args: {
+                listKey: command[0],
+                start: command[1],
+                stop: command[2],
+            },
+        };
+    },
+    lpush: (command: string[]) => {
+        return {
+            type: "lpush",
+            args: { listKey: command[0], value: command.slice(1) },
+        };
+    },
+    llen: (command: string[]) => {
+        return {
+            type: "llen",
+            args: { listKey: command[0] },
+        };
+    },
+    lpop: (command: string[]) => {
+        return {
+            type: "lpop",
+            args: {
+                listKey: command[0],
+                ...(command[1] && {
+                    elementsToRemove: parseInt(command[1]),
+                }),
+            },
+        };
+    },
+};

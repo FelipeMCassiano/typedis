@@ -53,4 +53,5 @@ export type LLenArgs = {
 };
 export type LPopArgs = {
     listKey: string;
+    elementsToRemove?: number;
 };

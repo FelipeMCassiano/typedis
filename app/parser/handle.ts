@@ -44,8 +44,12 @@ const handlers: Handler = {
     lpush: (args) => respInt(storage.lpush(args.listKey, ...args.value)),
     llen: (args) => respInt(storage.getlength(args.listKey)),
     lpop: (args) => {
-        const result = storage.lpop(args.listKey);
-        return result ? respBulk(result) : nonRespBulk();
+        const result = storage.lpop(args.listKey, args.elementsToRemove);
+        if (!result) {
+            return nonRespBulk();
+        }
+
+        return Array.isArray(result) ? respArray(...result) : respBulk(result);
     },
 };
 
