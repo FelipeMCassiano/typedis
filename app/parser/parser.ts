@@ -101,4 +101,13 @@ const commandsParserMap: Map<CommandType, CommandParser> = new Map([
             };
         },
     ],
+    [
+        "llen",
+        (command: string[]) => {
+            return {
+                type: "llen",
+                args: { listKey: command[0] },
+            };
+        },
+    ],
 ]);

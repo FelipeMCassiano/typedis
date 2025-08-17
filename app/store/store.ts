@@ -12,6 +12,11 @@ class Storage<T> {
         this.storage = new Map();
         this.listStorage = new Map();
     }
+
+    getlength(listKey: string): number {
+        return this.listStorage.get(listKey)?.length || 0;
+    }
+
     set(key: string, value: StorageValue<T>) {
         this.storage.set(key, value);
     }

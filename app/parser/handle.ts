@@ -42,6 +42,7 @@ const handlers: Handler = {
         return respArray(...storage.lrange(args.listKey, start, stop));
     },
     lpush: (args) => respInt(storage.lpush(args.listKey, ...args.value)),
+    llen: (args) => respInt(storage.getlength(args.listKey)),
 };
 
 function respArray(...values: string[]): string {

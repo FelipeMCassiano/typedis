@@ -5,7 +5,8 @@ export type ParserResult =
     | { type: "ping"; args: PingArgs }
     | { type: "rpush"; args: RPushArgs }
     | { type: "lrange"; args: LRangeArgs }
-    | { type: "lpush"; args: LPushArgs };
+    | { type: "lpush"; args: LPushArgs }
+    | { type: "llen"; args: LLenArgs };
 
 export type SetArgs = {
     key: string;
@@ -35,6 +36,10 @@ export type LPushArgs = {
     value: string[];
 };
 
+export type LLenArgs = {
+    listKey: string;
+};
+
 export type CommandType =
     | "echo"
     | "set"
@@ -42,4 +47,5 @@ export type CommandType =
     | "get"
     | "rpush"
     | "lrange"
-    | "lpush";
+    | "lpush"
+    | "llen";
