@@ -72,17 +72,17 @@ class Storage<T> {
     }
     lpop(listKey: string, elementsToRemove?: number): T[] | T | null {
         const list = this.listStorage.get(listKey);
-        if (!list || list.length < 0) {
+        if (!list || list.length <= 0) {
             return null;
         }
         if (elementsToRemove) {
-            const removedElements = [];
-            while (elementsToRemove > 0) {
+            const count = Math.min(elementsToRemove, list.length);
+            const removedElements: T[] = new Array(count);
+            for (let i = 0; i < count; i++) {
                 const removed = list.deleteHead();
                 if (removed) {
-                    removedElements.push(removed);
+                    removedElements[i] = removed;
                 }
-                elementsToRemove--;
             }
             return removedElements;
         }
