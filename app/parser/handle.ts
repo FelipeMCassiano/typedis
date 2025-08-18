@@ -54,9 +54,13 @@ const handlers: Handler = {
         return Array.isArray(result) ? respArray(...result) : respBulk(result);
     },
     blpop: async (args) => {
-        const result = await storage.blpop(args.listKey, args.timeToWait);
-        console.log(...result);
-        return respArray(...result);
+        try {
+            const result = await storage.blpop(args.listKey, args.timeToWait);
+            console.log(result);
+            return respArray(...result);
+        } catch (err: any) {
+            return nonRespBulk();
+        }
     },
 };
 

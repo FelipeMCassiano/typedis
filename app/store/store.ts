@@ -92,6 +92,7 @@ class Storage<T> {
         return list.deleteHead();
     }
     blpop(listKey: string, timeToWait: number): Promise<[string, T]> {
+        console.log("waiting", timeToWait);
         let list = this.listStorage.get(listKey);
         if (!list) {
             list = new LinkedList<T>();
@@ -99,16 +100,15 @@ class Storage<T> {
         }
 
         if (list.length > 0) {
-            console.log("list have <= 1 item");
             return Promise.resolve([listKey, list.deleteHead()!]);
         }
         return new Promise((resolve, reject) => {
-            console.log("blocked");
             const timeoutId =
-                timeToWait !== 0
+                timeToWait > 0
                     ? setTimeout(() => {
                           cleanup();
-                      }, timeToWait)
+                          reject(new Error("timeoutExpired"));
+                      }, timeToWait * 1000)
                     : null;
 
             const checkList = () => {
@@ -117,7 +117,6 @@ class Storage<T> {
                     resolve([listKey, list?.deleteHead()!]);
                 }
             };
-            console.log("checkList registerd", checkList);
 
             const cleanup = () => {
                 if (timeoutId) clearTimeout(timeoutId);

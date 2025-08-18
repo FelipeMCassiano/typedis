@@ -106,7 +106,7 @@ const commandsParserMap: CommandMap = {
     blpop: (command) => {
         return {
             type: "blpop",
-            args: { listKey: command[0], timeToWait: parseInt(command[1]) },
+            args: { listKey: command[0], timeToWait: Number(command[1]) },
         };
     },
 };

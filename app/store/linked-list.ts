@@ -102,7 +102,7 @@ export class LinkedList<T> extends EventEmitter {
             : this.walkFromTail(start, stop);
     }
     private emitPush() {
-        process.nextTick(() => {
+        setImmediate(() => {
             this.emit("push");
         });
     }
