@@ -33,11 +33,11 @@ type CommandMap = {
 };
 
 const commandsParserMap: CommandMap = {
-    echo: (command: string[]): ParserResult => {
+    echo: (command): ParserResult => {
         return { type: "echo", args: { arg: command[0] } };
     },
 
-    set: (command: string[]): ParserResult => {
+    set: (command): ParserResult => {
         const args: string[] = [];
         for (const arg of command) {
             if (arg.toLowerCase() === "px") {
@@ -52,25 +52,25 @@ const commandsParserMap: CommandMap = {
         };
     },
 
-    ping: (command: string[]): ParserResult => {
+    ping: (command): ParserResult => {
         return {
             type: "ping",
             args: { pong: "PONG" },
         };
     },
 
-    get: (command: string[]) => {
+    get: (command) => {
         const key = command[0];
         return { type: "get", args: { key: key } };
     },
 
-    rpush: (command: string[]) => {
+    rpush: (command) => {
         return {
             type: "rpush",
             args: { listKey: command[0], value: command.slice(1) },
         };
     },
-    lrange: (command: string[]) => {
+    lrange: (command) => {
         return {
             type: "lrange",
             args: {
@@ -80,19 +80,19 @@ const commandsParserMap: CommandMap = {
             },
         };
     },
-    lpush: (command: string[]) => {
+    lpush: (command) => {
         return {
             type: "lpush",
             args: { listKey: command[0], value: command.slice(1) },
         };
     },
-    llen: (command: string[]) => {
+    llen: (command) => {
         return {
             type: "llen",
             args: { listKey: command[0] },
         };
     },
-    lpop: (command: string[]) => {
+    lpop: (command) => {
         return {
             type: "lpop",
             args: {
@@ -101,6 +101,12 @@ const commandsParserMap: CommandMap = {
                     elementsToRemove: parseInt(command[1]),
                 }),
             },
+        };
+    },
+    blpop: (command) => {
+        return {
+            type: "blpop",
+            args: { listKey: command[0], timeToWait: parseInt(command[1]) },
         };
     },
 };

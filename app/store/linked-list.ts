@@ -1,3 +1,4 @@
+import { EventEmitter } from "events";
 class Node<T> {
     value: T;
     prev: Node<T> | null;
@@ -13,18 +14,17 @@ class Node<T> {
         this.prev = prev;
     }
 }
-export class LinkedList<T> {
-    head: Node<T> | null;
-    tail: Node<T> | null;
+export class LinkedList<T> extends EventEmitter {
+    head: Node<T> | null = null;
+    tail: Node<T> | null = null;
     length: number = 0;
-    constructor() {
-        this.head = this.tail = null;
-    }
     append(value: T) {
         this.length++;
 
+        this.emitPush();
         if (!this.tail) {
             this.head = this.tail = new Node(value);
+
             return;
         }
 
@@ -37,8 +37,11 @@ export class LinkedList<T> {
     prepend(value: T) {
         this.length++;
 
+        this.emitPush();
+
         if (!this.head) {
             this.head = this.tail = new Node(value);
+
             return;
         }
 
@@ -97,6 +100,11 @@ export class LinkedList<T> {
         return isCloseToHead
             ? this.walkFromHead(start, stop)
             : this.walkFromTail(start, stop);
+    }
+    private emitPush() {
+        process.nextTick(() => {
+            this.emit("push");
+        });
     }
 
     private walkFromHead(start: number, stop: number): T[] {

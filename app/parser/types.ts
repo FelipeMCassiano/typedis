@@ -7,7 +7,8 @@ export type ParserResult =
     | { type: "lrange"; args: LRangeArgs }
     | { type: "lpush"; args: LPushArgs }
     | { type: "llen"; args: LLenArgs }
-    | { type: "lpop"; args: LPopArgs };
+    | { type: "lpop"; args: LPopArgs }
+    | { type: "blpop"; args: BLPopArgs };
 
 export type CommandType =
     | "echo"
@@ -18,7 +19,8 @@ export type CommandType =
     | "lrange"
     | "lpush"
     | "llen"
-    | "lpop";
+    | "lpop"
+    | "blpop";
 
 export type SetArgs = {
     key: string;
@@ -54,4 +56,8 @@ export type LLenArgs = {
 export type LPopArgs = {
     listKey: string;
     elementsToRemove?: number;
+};
+export type BLPopArgs = {
+    listKey: string;
+    timeToWait: number;
 };

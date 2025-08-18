@@ -1,14 +1,16 @@
 import storage from "../store/store";
 import type { ParserResult } from "./types";
 
-export function handleParserResult(parserResult?: ParserResult): string {
+export async function handleParserResult(
+    parserResult?: ParserResult
+): Promise<string> {
     if (!parserResult) {
         return nonRespBulk();
     }
-    return handlers[parserResult.type](parserResult.args as never);
+    return await handlers[parserResult.type](parserResult.args as never);
 }
 type Handler<T extends ParserResult = ParserResult> = {
-    [K in T as K["type"]]: (args: K["args"]) => string;
+    [K in T as K["type"]]: (args: K["args"]) => string | Promise<string>;
 };
 const handlers: Handler = {
     echo: (args) => respBulk(args.arg),
@@ -50,6 +52,11 @@ const handlers: Handler = {
         }
 
         return Array.isArray(result) ? respArray(...result) : respBulk(result);
+    },
+    blpop: async (args) => {
+        const result = await storage.blpop(args.listKey, args.timeToWait);
+        console.log(...result);
+        return respArray(...result);
     },
 };
 

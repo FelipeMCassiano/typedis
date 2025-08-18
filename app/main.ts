@@ -4,10 +4,10 @@ import { parse } from "./parser/parser";
 
 console.log("Logs from your program will appear here!");
 
-const server: net.Server = net.createServer((connection: net.Socket) => {
-    connection.on("data", (data) => {
+const server: net.Server = net.createServer(async (connection: net.Socket) => {
+    connection.on("data", async (data) => {
         const parsedData = parse(data.toString());
-        const handledData = handleParserResult(parsedData);
+        const handledData = await handleParserResult(parsedData);
 
         connection.write(handledData);
     });
